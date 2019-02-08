@@ -1,9 +1,13 @@
 import { v4 } from 'uuid';
 import Pusher from 'pusher-js';
 
+import { authHeader } from '../_helpers';
 function inserted(el) {
   const canvas = el;
   const ctx = canvas.getContext('2d');
+  const user = JSON.parse(localStorage.getItem('user'));
+  console.log(user[Object.keys(user)[0]]);
+  const userId = user[Object.keys(user)[0]];
 
   canvas.width = 1000;
   canvas.height = 800;
@@ -15,25 +19,20 @@ function inserted(el) {
   const pusher = new Pusher('4773ba0e42069c3298c1', {
     cluster: 'eu'
   });
-  console.log(pusher);
 
   const channel = pusher.subscribe('painting');
   channel.bind('draw', data => {
     const { userId: id, line } = data;
-    console.log(data);
+    console.log(id);
 
-    if (userId !== id) {
-      line.forEach(position => {
-        paint(position.start, position.stop, GUEST_STROKE);
-      });
-    }
+    line.forEach(position => {
+      paint(position.start, position.stop, GUEST_STROKE);
+    });
   });
-  console.log(channel);
 
   let prevPos = { offsetX: 0, offsetY: 0 };
   let line = [];
   let isPainting = false;
-  const userId = v4();
   const USER_STROKE = 'red';
   const GUEST_STROKE = 'greenyellow';
 
@@ -68,13 +67,13 @@ function inserted(el) {
       line,
       userId
     };
+    console.log(authHeader());
+    console.log(body);
 
     fetch('http://localhost:4000/paint', {
       method: 'post',
       body: JSON.stringify(body),
-      headers: {
-        'content-type': 'application/json'
-      }
+      headers: { ...authHeader(), 'Content-Type': 'application/json' }
     }).then(() => (line = []));
   }
 

@@ -1,10 +1,13 @@
 require('dotenv').config();
+require('rootpath')();
 const express = require('express');
 const bodyParser = require('body-parser');
 const Pusher = require('pusher');
 
 const app = express();
-const port = process.env.PORT || 4000;
+const cors = require('cors');
+const jwt = require('_helpers/jwt');
+const errorHandler = require('_helpers/error-handler');
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID,
@@ -13,16 +16,25 @@ const pusher = new Pusher({
   cluster: 'eu'
 });
 
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  );
-  next();
-});
+app.use(bodyParser.json());
+app.use(cors());
+
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', '*');
+//   res.header(
+//     'Access-Control-Allow-Headers',
+//     'Origin, X-Requested-With, Content-Type, Accept'
+//   );
+//   next();
+// });
+app.use(jwt());
+
+// api routes
+app.use('/users', require('./users/users.controller'));
+
+// global error handler
+app.use(errorHandler);
 
 app.post('/paint', (req, res) => {
   console.log(req.body);
@@ -31,6 +43,9 @@ app.post('/paint', (req, res) => {
   res.json(req.body);
 });
 
-app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
+// start server
+const port =
+  process.env.NODE_ENV === 'production' ? process.env.PORT || 80 : 4000;
+const server = app.listen(port, function() {
+  console.log('Server listening on port ' + port);
 });
