@@ -37,8 +37,6 @@ app.use('/users', require('./users/users.controller'));
 app.use(errorHandler);
 
 app.post('/paint', (req, res) => {
-  console.log(req.body);
-
   pusher.trigger('painting', 'draw', req.body);
   res.json(req.body);
 });

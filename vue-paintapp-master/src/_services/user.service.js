@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader } from '../_helpers';
+import { colors } from '../colors';
 
 export const userService = {
   login,
@@ -24,6 +25,7 @@ function login(username, password) {
       // login successful if there's a jwt token in the response
       if (user.token) {
         // store user details and jwt token in local storage to keep user logged in between page refreshes
+
         localStorage.setItem('user', JSON.stringify(user));
       }
 
@@ -37,6 +39,8 @@ function logout() {
 }
 
 function register(user) {
+  let color = colors[Math.floor(Math.random() * colors.length)];
+  user.color = color;
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -54,7 +58,13 @@ function getAll() {
     headers: authHeader()
   };
 
-  return fetch(`${config.apiUrl}/users`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/users`, requestOptions)
+    .then(handleResponse)
+    .then(users => {
+      localStorage.setItem('users', JSON.stringify(users));
+
+      return users;
+    });
 }
 
 function getById(id) {
@@ -69,13 +79,15 @@ function getById(id) {
 }
 
 function update(user) {
+  const userId = user[Object.keys(user)[0]];
+
   const requestOptions = {
     method: 'PUT',
     headers: { ...authHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify(user)
   };
 
-  return fetch(`${config.apiUrl}/users/${user.id}`, requestOptions).then(
+  return fetch(`${config.apiUrl}/users/${userId}`, requestOptions).then(
     handleResponse
   );
 }

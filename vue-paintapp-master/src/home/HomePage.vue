@@ -24,10 +24,12 @@
 
     <div id="app">
       <div class="main">
-        <div class="color-guide">
-          <h5>Color Guide</h5>
-          <div class="user user">User</div>
-          <div class="user guest">Guest</div>
+        <div v-if="users.items">
+          <div v-for="user in users.items" :key="user.id">
+            <h5
+              v-bind:style="{ backgroundColor: user.color}"
+            >{{user.firstName + ' ' + user.lastName}}</h5>
+          </div>
         </div>
         <canvas v-canvas></canvas>
       </div>

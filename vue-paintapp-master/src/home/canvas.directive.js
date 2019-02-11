@@ -6,7 +6,9 @@ function inserted(el) {
   const canvas = el;
   const ctx = canvas.getContext('2d');
   const user = JSON.parse(localStorage.getItem('user'));
-  console.log(user[Object.keys(user)[0]]);
+
+  const users = JSON.parse(localStorage.getItem('users'));
+
   const userId = user[Object.keys(user)[0]];
 
   canvas.width = 1000;
@@ -23,18 +25,21 @@ function inserted(el) {
   const channel = pusher.subscribe('painting');
   channel.bind('draw', data => {
     const { userId: id, line } = data;
-    console.log(id);
+
+    const result = users.find(user => user.id === id);
+
+    let color = result.color;
 
     line.forEach(position => {
-      paint(position.start, position.stop, GUEST_STROKE);
+      paint(position.start, position.stop, color);
     });
   });
 
   let prevPos = { offsetX: 0, offsetY: 0 };
   let line = [];
   let isPainting = false;
-  const USER_STROKE = 'red';
-  const GUEST_STROKE = 'greenyellow';
+  const USER_STROKE = user.color;
+  const GUEST_STROKE = user.color;
 
   function handleMouseDown(e) {
     const { offsetX, offsetY } = e;
@@ -67,7 +72,6 @@ function inserted(el) {
       line,
       userId
     };
-    console.log(authHeader());
     console.log(body);
 
     fetch('http://localhost:4000/paint', {
