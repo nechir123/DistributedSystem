@@ -6,7 +6,7 @@
     "serve": "webpack-dev-server --open",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start-dev": "nodemon ./server.js"
+    "start-dev": "nodemon ./server.js "
   },
   "dependencies": {
     "body-parser": "^1.18.3",
