@@ -2,19 +2,13 @@ require('dotenv').config();
 require('rootpath')();
 const express = require('express');
 const bodyParser = require('body-parser');
-const Pusher = require('pusher');
 
 const app = express();
 const cors = require('cors');
 const jwt = require('_helpers/jwt');
 const errorHandler = require('_helpers/error-handler');
-
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID,
-  key: process.env.PUSHER_KEY,
-  secret: process.env.PUSHER_SECRET,
-  cluster: 'eu'
-});
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -36,14 +30,16 @@ app.use('/users', require('./users/users.controller'));
 // global error handler
 app.use(errorHandler);
 
-app.post('/paint', (req, res) => {
-  pusher.trigger('painting', 'draw', req.body);
-  res.json(req.body);
+io.on('connection', function(socket) {
+  socket.on('sending message', message => {
+    io.sockets.emit('new message', { message: message });
+  });
 });
-
 // start server
 const port =
   process.env.NODE_ENV === 'production' ? process.env.PORT || 80 : 4000;
 const server = app.listen(port, function() {
   console.log('Server listening on port ' + port);
 });
+
+io.listen(server, { log: false, origins: '*:*' });

@@ -1,10 +1,11 @@
 import { v4 } from 'uuid';
-import Pusher from 'pusher-js';
+import io from 'socket.io-client';
 
 import { authHeader } from '../_helpers';
 function inserted(el) {
   const canvas = el;
   const ctx = canvas.getContext('2d');
+  var socket = io.connect('http://localhost:4000');
   const user = JSON.parse(localStorage.getItem('user'));
 
   const users = JSON.parse(localStorage.getItem('users'));
@@ -18,13 +19,11 @@ function inserted(el) {
   ctx.lineCap = 'round';
   ctx.lineWidth = 5;
 
-  const pusher = new Pusher('4773ba0e42069c3298c1', {
-    cluster: 'eu'
-  });
+  socket.on('new message', function(data) {
+    const { userId: id, line } = data.message;
+    console.log(data);
 
-  const channel = pusher.subscribe('painting');
-  channel.bind('draw', data => {
-    const { userId: id, line } = data;
+    console.log(userId);
 
     const result = users.find(user => user.id === id);
 
@@ -34,7 +33,6 @@ function inserted(el) {
       paint(position.start, position.stop, color);
     });
   });
-
   let prevPos = { offsetX: 0, offsetY: 0 };
   let line = [];
   let isPainting = false;
@@ -74,11 +72,7 @@ function inserted(el) {
     };
     console.log(body);
 
-    fetch('http://localhost:4000/paint', {
-      method: 'post',
-      body: JSON.stringify(body),
-      headers: { ...authHeader(), 'Content-Type': 'application/json' }
-    }).then(() => (line = []));
+    socket.emit('sending message', body);
   }
 
   function paint(prevPosition, currPosition, strokeStyle) {
