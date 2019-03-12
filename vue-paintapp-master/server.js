@@ -2,6 +2,9 @@ require('dotenv').config();
 require('rootpath')();
 const express = require('express');
 const bodyParser = require('body-parser');
+const os = require('os');
+
+var networkInterfaces = os.networkInterfaces();
 
 const app = express();
 const cors = require('cors');

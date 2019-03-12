@@ -1,5 +1,13 @@
 var path = require('path');
+const webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+
+const os = require('os');
+
+var networkInterfaces = os.networkInterfaces();
+
+const address = networkInterfaces['Wi-Fi'][1].address;
+const apiUrl = 'http://' + address + ':4000';
 
 module.exports = {
   mode: 'development',
@@ -23,17 +31,22 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html'
+    }),
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jQuery: 'jquery',
+      'window.jQuery': 'jquery'
     })
   ],
   devServer: {
     historyApiFallback: true,
-    host: '130.231.3.56', //your ip address
+    host: address, //your ip address
     port: 8080
   },
   externals: {
     // global app config object
     config: JSON.stringify({
-      apiUrl: 'http://130.231.3.56:4000'
+      apiUrl: apiUrl
     })
   }
 };

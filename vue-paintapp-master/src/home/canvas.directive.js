@@ -2,10 +2,14 @@ import { v4 } from 'uuid';
 import io from 'socket.io-client';
 
 import { authHeader } from '../_helpers';
+import { networkInterfaces } from 'os';
+
 function inserted(el) {
+  const apiUrl = 'http://' + location.hostname + ':4000';
+
   const canvas = el;
   const ctx = canvas.getContext('2d');
-  var socket = io.connect('http://localhost:4000');
+  var socket = io.connect(apiUrl);
   const user = JSON.parse(localStorage.getItem('user'));
 
   const users = JSON.parse(localStorage.getItem('users'));
@@ -21,9 +25,6 @@ function inserted(el) {
 
   socket.on('new message', function(data) {
     const { userId: id, line } = data.message;
-    console.log(data);
-
-    console.log(userId);
 
     const result = users.find(user => user.id === id);
 
@@ -70,7 +71,6 @@ function inserted(el) {
       line,
       userId
     };
-    console.log(body);
 
     socket.emit('sending message', body);
   }
